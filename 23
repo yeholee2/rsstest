@@ -1,0 +1,15 @@
+import requests
+from pathlib import Path
+
+RSS_URL = "https://rss.naver.com/rss/section/100.xml"  # 정치 섹션 예시
+OUT = Path("data/naver_rss_politics.xml")
+OUT.parent.mkdir(parents=True, exist_ok=True)
+
+r = requests.get(RSS_URL, timeout=20)
+r.raise_for_status()
+text = r.text
+if "<rss" not in text.lower():
+    raise RuntimeError("RSS 형식 아님/차단")
+
+OUT.write_text(text, encoding="utf-8")
+print(f"[OK] {RSS_URL} -> {OUT} ({len(text)} bytes)")
