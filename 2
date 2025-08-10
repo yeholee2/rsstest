@@ -1,0 +1,30 @@
+name: Update Naver RSS
+
+on:
+  schedule:
+    - cron: "15 * * * *"  # UTC 기준 매시 15분 (KST: 매시 24분쯤 완료)
+  workflow_dispatch: {}
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests
+      - run: python scripts/fetch_rss.py
+      - name: Commit & push if changed
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: update rss (UTC $(date -u +'%Y-%m-%d %H:%M'))"
+            git push
+          else
+            echo "No changes."
+          fi
